@@ -2,45 +2,50 @@ package imghash
 
 import (
 	"image/color"
-	"log"
+	"testing"
 )
 
+// TODO: combine this with the one in hash.go so that test can use that and does not need to be updated separately
 func rgbToY(r, g, b int) uint8 {
-	y := uint8((19595*int32(r) + 38470*int32(g) + 7471*int32(b) + 1<<15) >> 16) //24)
-	//log.Printf("2) r0, g0, b0 = %d, %d, %d => y          = %d", r, g, b, y)
-	return y
+	return uint8((19595*int32(r) + 38470*int32(g) + 7471*int32(b) + 1<<15) >> 16)
 }
 
-func rgbToYJPEG(r, g, b int) uint8 {
-	y := uint8(0.2990*float32(r) + 0.5870*float32(g) + 0.1140*float32(b))
-	return y
-}
-
-func runTest(r, g, b int) uint8 {
-	r0, g0, b0 := uint8(r), uint8(g), uint8(b)
-	y, cb, cr := color.RGBToYCbCr(r0, g0, b0)
-	if cb == cr {
+// Subtract two numbers and return 0 or a whole number
+func subAbs(n1, n2 uint8) uint8 {
+	if n1 > n2 {
+		return n1 - n2
 	}
-	//r1, g1, b1 := color.YCbCrToRGB(y, cb, cr)
-	//log.Printf("1) r0, g0, b0 = %d, %d, %d => y,  cb, cr = %d, %d, %d => r1, g1, b1 = %d, %d, %d\n", r0, g0, b0, y, cb, cr, r1, g1, b1)
-	return y
+	return n2 - n1
 }
 
-// TODO: make these actual tests
-func trgb() {
+func TestHashJPEG(t *testing.T) {
 	for r := 0; r < 256; r += 7 {
 		for g := 0; g < 256; g += 5 {
 			for b := 0; b < 256; b += 3 {
-				y1 := runTest(r, g, b)
-				y2 := rgbToY(r, g, b)
-				y3 := rgbToYJPEG(r, g, b)
+				y1 := rgbToY(r, g, b)
+
+				// Implementation according to the JFIF
+				yfloat := 0.2990*float32(r) + 0.5870*float32(g) + 0.1140*float32(b)
+				y2 := uint8(yfloat)
+
+				// We allow the hashes to be 1 off because number such as 16.9 are floored to 16 in the JPEG impl, but ceiled to 17 in the builtin one.
+				if y1 != y2 && subAbs(y1, y2) > 1 {
+					t.Fatalf("Mismatched Y JPEG value for r, g, b = %d, %d, %d :: %d vs %d => %f", r, g, b, y1, y2, yfloat)
+				}
+			}
+		}
+	}
+}
+
+func TestHashStdLib(t *testing.T) {
+	for r := 0; r < 256; r += 7 {
+		for g := 0; g < 256; g += 5 {
+			for b := 0; b < 256; b += 3 {
+				y1 := rgbToY(r, g, b)
+				y2, _, _ := color.RGBToYCbCr(uint8(r), uint8(g), uint8(b))
 
 				if y1 != y2 {
-					log.Printf("Mismatched Y values for r, g, b = %d, %d, %d :: %d vs %d", r, g, b, y1, y2)
-				}
-
-				if y2 != y3 {
-					log.Printf("Invalid Y JPEG value for r, g, b = %d, %d, %d :: %d vs %d ... %f", r, g, b, y2, y3, 0.2990*float32(r)+0.5870*float32(g)+0.1140*float32(b))
+					t.Fatalf("Mismatched Y StdLib values for r, g, b = %d, %d, %d :: %d vs %d", r, g, b, y1, y2)
 				}
 			}
 		}
