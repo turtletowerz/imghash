@@ -115,8 +115,8 @@ func ffmpegRunner(name string, video bool) (*[]Hash, error) {
 // New from file returns
 func NewFromFile(name string) (*Hash, error) {
 	// TODO: how to handle gifs? also handle image checks instead of just saying a non-video = an image
-	if isVideo(name) {
-		return nil, errors.New("input file must be a video")
+	if !isImage(name) {
+		return nil, errors.New("input file must be an image")
 	}
 
 	hashes, err := ffmpegRunner(name, false)

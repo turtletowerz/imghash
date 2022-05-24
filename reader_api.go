@@ -42,10 +42,11 @@ func AvErrorStr(averr int) error {
 
 	C.av_strerror(C.int(averr), (*C.char)(unsafe.Pointer(&b[0])), C.size_t(errlen))
 
-	return errors.New(string(b[:bytes.Index(b, []byte{0})]))
+	return errors.New(string(b[:bytes.IndexByte(b, 0)]))
+
 }
 
-func NewFromVideo4(name string) (*File, error) {
+func NewFromVideo2(name string) (*File, error) {
 	nm := C.CString(name)
 	defer C.free(unsafe.Pointer(nm))
 
