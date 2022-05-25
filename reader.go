@@ -12,10 +12,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-var InvalidHeader = errors.New("Invalid Header")
+var (
+	InvalidHeader    = errors.New("Invalid Header")
+	InvalidExtension = errors.New("Invalid Extension")
 
-// The file magic for any file that contains hashes
-var FileMagic string = "TUR"
+	// The file magic for any file that contains hashes
+	FileMagic string = "TUR"
+)
 
 const (
 	width, height int = 9, 9
@@ -114,9 +117,9 @@ func ffmpegRunner(name string, video bool) (*[]Hash, error) {
 
 // New from file returns
 func NewFromFile(name string) (*Hash, error) {
-	// TODO: how to handle gifs? also handle image checks instead of just saying a non-video = an image
+	// TODO: how to handle gifs?
 	if !isImage(name) {
-		return nil, errors.New("input file must be an image")
+		return nil, InvalidExtension
 	}
 
 	hashes, err := ffmpegRunner(name, false)
@@ -134,7 +137,7 @@ func NewFromFile(name string) (*Hash, error) {
 
 func NewFromVideo(name string) (*File, error) {
 	if !isVideo(name) {
-		return nil, errors.New("input file must be a video")
+		return nil, InvalidExtension
 	}
 
 	file := NewFile()
@@ -167,8 +170,6 @@ func NewFromDirectory(dir string) (*File, error) {
 			}
 
 			f.hashes = append(f.hashes, *hashes...)
-		} else {
-			// TODO
 		}
 		return nil
 	})

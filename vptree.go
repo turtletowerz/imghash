@@ -29,7 +29,7 @@ type node struct {
 
 type Tree struct {
 	work  []int
-	Root  *node
+	root  *node
 	count int
 }
 
@@ -55,7 +55,7 @@ func NewTree(p []Hash) *Tree {
 	t := new(Tree)
 	t.count = len(p)
 	t.work = make([]int, t.count)
-	t.Root = t.build(p)
+	t.root = t.build(p)
 	return t
 }
 
@@ -125,11 +125,11 @@ func (t *Tree) Len() int {
 
 // Returns the nearest items to q, doing a length == cap validation if check is true
 func (t *Tree) nearest(q *Queue, e *Hash, check bool) {
-	if t.Root == nil {
+	if t.root == nil {
 		return
 	}
 
-	t.Root.search(q, e, check)
+	t.root.search(q, e, check)
 
 	// Remove the MaxInt that is added by nearest searches
 	removeInit := (q.Len() > 0 && q.Max().Item == nil)

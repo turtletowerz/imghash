@@ -2,7 +2,6 @@ package imghash
 
 import (
 	"image"
-	"io"
 	"math/bits"
 
 	"image/color"
@@ -10,7 +9,6 @@ import (
 	_ "image/png"
 
 	"github.com/pkg/errors"
-	"golang.org/x/image/bmp"
 )
 
 type Hash struct {
@@ -59,19 +57,19 @@ func differenceHash(img *image.RGBA) (hdhash, vdhash uint64, err error) {
 
 	// Whether you do < or > for the comparison doesn't matter, it just has to be consistent.
 	var offset uint
-	for x := 0; x < 8; x++ {
-		for y := 0; y < 8; y++ {
-			offset = uint(x*8 + y)
-
-			// Vertical hash.
-			if pixels[x][y] < pixels[x][y+1] {
+	for y := 0; y < dy-1; y++ {
+		for x := 0; x < dx-1; x++ {
+			// Horizontal hash.
+			if pixels[y][x] < pixels[y][x+1] {
 				vdhash |= 1 << offset
 			}
 
-			// Horizontal hash.
-			if pixels[x][y] < pixels[x+1][y] {
+			// Vertical hash.
+			if pixels[y][x] < pixels[y+1][x] {
 				hdhash |= 1 << offset
 			}
+
+			offset++
 		}
 	}
 
@@ -79,17 +77,17 @@ func differenceHash(img *image.RGBA) (hdhash, vdhash uint64, err error) {
 }
 
 // Bitmaps are ideal because they are fast to make since there's no compression needed to go from AVFrame -> RGBA rawvideo
-func differenceHashBitmap(reader io.Reader) (hdhash, vdhash uint64, err error) {
-	img, err := bmp.Decode(reader)
-	if err != nil {
-		err = errors.Wrap(err, "decoding bitmap image")
-		return
-	}
+// func differenceHashBitmap(reader io.Reader) (hdhash, vdhash uint64, err error) {
+// 	img, err := bmp.Decode(reader)
+// 	if err != nil {
+// 		err = errors.Wrap(err, "decoding bitmap image")
+// 		return
+// 	}
 
-	if img.ColorModel() != color.RGBAModel {
-		err = errors.New("color model must be RGBA")
-		return
-	}
+// 	if img.ColorModel() != color.RGBAModel {
+// 		err = errors.New("color model must be RGBA")
+// 		return
+// 	}
 
-	return differenceHash(img.(*image.RGBA))
-}
+// 	return differenceHash(img.(*image.RGBA))
+// }
