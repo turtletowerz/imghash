@@ -56,20 +56,20 @@ func differenceHash(img *image.RGBA) (hdhash, vdhash uint64, err error) {
 	}
 
 	// Whether you do < or > for the comparison doesn't matter, it just has to be consistent.
-	var offset uint
+	var offset uint64 = 1
 	for y := 0; y < dy-1; y++ {
 		for x := 0; x < dx-1; x++ {
-			// Horizontal hash.
-			if pixels[y][x] < pixels[y][x+1] {
-				vdhash |= 1 << offset
-			}
-
 			// Vertical hash.
 			if pixels[y][x] < pixels[y+1][x] {
-				hdhash |= 1 << offset
+				vdhash |= offset
 			}
 
-			offset++
+			// Horizontal hash.
+			if pixels[y][x] < pixels[y][x+1] {
+				hdhash |= offset
+			}
+
+			offset <<= 1
 		}
 	}
 
