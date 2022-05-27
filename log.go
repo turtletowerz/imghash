@@ -52,34 +52,34 @@ func (l *Logger) SetOutput(out io.Writer) {
 	l.out = out
 }
 
-func (l *Logger) Die(format string, a ...interface{}) {
+func (l *Logger) Die(format string, a ...any) {
 	l.SetLogLevel(LogError)
 	l.Error(format, a...)
 	os.Exit(1)
 }
 
-func (l *Logger) Error(format string, a ...interface{}) {
+func (l *Logger) Error(format string, a ...any) {
 	if l.level < LogError { // Should never be possible but it's good to check anyways
 		return
 	}
 	l.Print(format, a...)
 }
 
-func (l *Logger) Warn(format string, a ...interface{}) {
+func (l *Logger) Warn(format string, a ...any) {
 	if l.level < LogWarn {
 		return
 	}
 	l.Print(format, a...)
 }
 
-func (l *Logger) Log(format string, a ...interface{}) {
+func (l *Logger) Log(format string, a ...any) {
 	if l.level < LogInfo {
 		return
 	}
 	l.Print(format, a...)
 }
 
-func (l *Logger) Debug(format string, a ...interface{}) {
+func (l *Logger) Debug(format string, a ...any) {
 	if l.level < LogDebug {
 		return
 	}
@@ -90,7 +90,7 @@ func (l *Logger) Println(s string) {
 	l.Print(s + "\n")
 }
 
-func (l *Logger) Print(format string, a ...interface{}) {
+func (l *Logger) Print(format string, a ...any) {
 	now := time.Now()
 
 	pc, file, line, _ := runtime.Caller(2) // Go down a depth of two for file and line info

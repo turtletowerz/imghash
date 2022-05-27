@@ -41,12 +41,12 @@ type heapItem struct {
 // Less compares with > because we want it to be sorted by smallest to greatest distances from the reference node.
 type Queue []heapItem
 
-func (q *Queue) Max() heapItem        { return (*q)[0] }
-func (q *Queue) Len() int             { return len(*q) }
-func (q *Queue) Less(i, j int) bool   { return (*q)[i].Item == nil || (*q)[i].Dist > (*q)[j].Dist }
-func (q *Queue) Push(x interface{})   { *q = append(*q, x.(heapItem)) }
-func (q *Queue) Pop() (i interface{}) { i, *q = (*q)[len(*q)-1], (*q)[:len(*q)-1]; return i }
-func (q *Queue) Swap(i, j int)        { (*q)[i], (*q)[j] = (*q)[j], (*q)[i] }
+func (q *Queue) Max() heapItem      { return (*q)[0] }
+func (q *Queue) Len() int           { return len(*q) }
+func (q *Queue) Less(i, j int) bool { return (*q)[i].Item == nil || (*q)[i].Dist > (*q)[j].Dist }
+func (q *Queue) Push(x any)         { *q = append(*q, x.(heapItem)) }
+func (q *Queue) Pop() (i any)       { i, *q = (*q)[len(*q)-1], (*q)[:len(*q)-1]; return i }
+func (q *Queue) Swap(i, j int)      { (*q)[i], (*q)[j] = (*q)[j], (*q)[i] }
 
 // Constructs a new tree and returns it.
 func NewTree(p []Hash) *Tree {

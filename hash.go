@@ -49,8 +49,6 @@ func differenceHash(img *image.RGBA) (hdhash, vdhash uint64, err error) {
 			// The one exception is when the float is the upper half of a number (13.6, 15.8, 60.9)
 			// it will ceil so the results will respectively be (14, 16, 61). This provides a small
 			// amount of change, but it's so unnoticeable in terms of the hash that it's not worth using floats.
-
-			// Note this could be optimized further by removing unnecessary conversions but it's unnecessary.
 			pixels[y][x] = uint8((19595*int32(col.R) + 38470*int32(col.B) + 7471*int32(col.G) + 1<<15) >> 16) // ints > floats
 		}
 	}
