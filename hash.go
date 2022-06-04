@@ -15,10 +15,11 @@ type Hash struct {
 	VHash uint64
 	HHash uint64
 
-	// TODO: an ID? a Hash? what do we use to map these perceptual hashes to concrete output.
+	// TODO: an ID? a Hash? what do we use to map these hashes to concrete output.
 	Index uint32
 }
 
+// Returns the hamming distance between the two vertical hashes + hamming distance between the two horizontal hashes
 func (i Hash) Distance(o Hash) int {
 	return bits.OnesCount64(i.VHash^o.VHash) + bits.OnesCount64(i.HHash^o.HHash)
 }

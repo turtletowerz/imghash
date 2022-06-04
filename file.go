@@ -5,6 +5,7 @@ import (
 	"io"
 	"math"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -26,14 +27,25 @@ type File struct {
 	path    string
 }
 
+// Creates a new file with the default file version
 func NewFile() *File {
 	return &File{version: 1, maxSize: size32}
 }
 
+// Creates a new file with the provided version. Currently only "1" exists as a valid option
+func NewFileWithVersion(version byte) *File {
+	if version != 1 {
+		panic("Invalid version: " + strconv.Itoa(int(version)))
+	}
+	return &File{version: version, maxSize: size32}
+}
+
+// Returns the length of the hash array, equivalent to len(*Hashes())
 func (f *File) Length() int {
 	return len(f.hashes)
 }
 
+// Returns a pointer to all the hashes currently in the file
 func (f *File) Hashes() *[]Hash {
 	return &f.hashes
 }
@@ -56,6 +68,7 @@ outer:
 	f.hashes = ret
 }
 
+// Writes the file to the given output path, appending the appropriate file extension
 func (f *File) Write(path string) error {
 	// determine byte size to use
 	if l := f.Length(); l <= math.MaxUint8 {
@@ -97,8 +110,8 @@ func (f *File) Write(path string) error {
 	return nil
 }
 
-// Read a given file into a hashinfo object
-// returns InvalidHeader error if the file type is invalid, or a normal error otherwise
+// Read a given file into a hashinfo object returns InvalidHeader
+// error if the file type is invalid, or a normal error otherwise
 func LoadFromFile(name string) (*File, error) {
 	file, err := os.Open(name)
 	if err != nil {

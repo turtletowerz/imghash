@@ -115,7 +115,7 @@ func ffmpegRunner(name string, video bool) (*[]Hash, error) {
 	return &hashes, nil
 }
 
-// New from file returns
+// New from file returns the hash of a single image file
 func NewFromFile(name string) (*Hash, error) {
 	// TODO: how to handle gifs?
 	if !isImage(name) {
@@ -128,7 +128,7 @@ func NewFromFile(name string) (*Hash, error) {
 	}
 
 	if len(*hashes) != 1 {
-		return nil, errors.New("0 or >1 hashes created (wat)")
+		return nil, errors.Errorf("%d hashes created instead of 1", len(*hashes))
 	}
 
 	// Lol
@@ -166,7 +166,7 @@ func NewFromDirectory(dir string) (*File, error) {
 		if vid := isVideo(path); vid || isImage(path) {
 			hashes, err := ffmpegRunner(path, vid)
 			if err != nil {
-				return errors.Wrapf(err, "")
+				return err // TODO: maybe more descriptive?
 			}
 
 			f.hashes = append(f.hashes, *hashes...)

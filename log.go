@@ -1,45 +1,39 @@
 package imghash
 
 import (
-	"fmt"
-	"io"
+	"log"
 	"os"
-	"runtime"
-	"strings"
-	"time"
 )
 
 const (
-
 	// For unrecoverable errors where you would be unable to continue the current scope of code.
 	LogError int = iota
 
 	// For non-critical errors that do not require you to abort/exit from the current scope of code.
 	LogWarn
 
-	// For non-error "informational" logging.
-	LogInfo
-
 	// For any type of verbose debug specific logging.
 	LogDebug
 )
 
 type Logger struct {
-	out    io.Writer
-	level  int
-	prefix string
+	*log.Logger
+	level int
 }
 
+// Returns a new logger with LogError as the logging level.
 func NewLogger() *Logger {
-	return &Logger{os.Stderr, 0, "LOG"}
+	return NewLoggerWithLevel(0)
 }
 
-func NewLoggerWithPrefix(prefix string) *Logger {
-	l := NewLogger()
-	l.prefix = prefix
+// Returns a new logger with the specified log level set, panicking if the log level is invalid.
+func NewLoggerWithLevel(level int) *Logger {
+	l := &Logger{log.New(os.Stdout, "", log.LstdFlags), 0}
+	l.SetLogLevel(level)
 	return l
 }
 
+// Sets the given logging level, panicking if the log level is invalid.
 func (l *Logger) SetLogLevel(level int) {
 	if level < 0 || level > 3 {
 		panic("You must set a log level between 0 and 3") // This is lazy but whatever
@@ -48,63 +42,56 @@ func (l *Logger) SetLogLevel(level int) {
 	l.level = level
 }
 
-func (l *Logger) SetOutput(out io.Writer) {
-	l.out = out
-}
-
-func (l *Logger) Die(format string, a ...any) {
-	l.SetLogLevel(LogError)
-	l.Error(format, a...)
-	os.Exit(1)
-}
-
 func (l *Logger) Error(format string, a ...any) {
 	if l.level < LogError { // Should never be possible but it's good to check anyways
 		return
 	}
-	l.Print(format, a...)
+	l.Fatalf(format, a...)
+}
+
+func (l *Logger) Errorln(a ...any) {
+	if l.level < LogError { // Should never be possible but it's good to check anyways
+		return
+	}
+	l.Fatalln(a...)
 }
 
 func (l *Logger) Warn(format string, a ...any) {
 	if l.level < LogWarn {
 		return
 	}
-	l.Print(format, a...)
-}
-
-func (l *Logger) Log(format string, a ...any) {
-	if l.level < LogInfo {
-		return
-	}
-	l.Print(format, a...)
+	l.Printf(format, a...)
 }
 
 func (l *Logger) Debug(format string, a ...any) {
 	if l.level < LogDebug {
 		return
 	}
-	l.Print(format, a...)
+	l.Printf(format, a...)
 }
 
-func (l *Logger) Println(s string) {
-	l.Print(s + "\n")
+func (l *Logger) Debugln(a ...any) {
+	if l.level < LogDebug {
+		return
+	}
+	l.Println(a...)
 }
 
-func (l *Logger) Print(format string, a ...any) {
-	now := time.Now()
+// func (l *Logger) Print(format string, a ...any) {
+// 	now := time.Now()
 
-	pc, file, line, _ := runtime.Caller(2) // Go down a depth of two for file and line info
-	files := strings.Split(file, "/")
-	fns := strings.Split(runtime.FuncForPC(pc).Name(), ".")
+// 	pc, file, line, _ := runtime.Caller(2) // Go down a depth of two for file and line info
+// 	files := strings.Split(file, "/")
+// 	fns := strings.Split(runtime.FuncForPC(pc).Name(), ".")
 
-	fmt.Fprintf(
-		l.out,
-		"%s [%s] %s:%d:%s() %s\n",
-		now.Format("2006-01-02 15:04:05"),
-		l.prefix,
-		files[len(files)-1],       // The file name
-		line,                      // Line number
-		fns[len(fns)-1],           // Function name
-		fmt.Sprintf(format, a...), // Message
-	)
-}
+// 	fmt.Fprintf(
+// 		l.out,
+// 		"%s [%s] %s:%d:%s() %s\n",
+// 		now.Format("2006-01-02 15:04:05"),
+// 		l.prefix,
+// 		files[len(files)-1],       // The file name
+// 		line,                      // Line number
+// 		fns[len(fns)-1],           // Function name
+// 		fmt.Sprintf(format, a...), // Message
+// 	)
+// }

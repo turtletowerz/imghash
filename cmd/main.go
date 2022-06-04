@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"io/fs"
-	"log"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -19,7 +18,7 @@ var (
 	filename = flag.String("f", "", "The name of the file to open for hash testing")
 	option   = flag.String("o", "write", "Option to pass to the hasher (defualt write)")
 	logfile  = flag.String("l", "-", "The location to send hashing logs to (default stdout)")
-	logger   *log.Logger
+	logger   *imghash.Logger
 )
 
 func sub(f, s uint32) uint32 {
@@ -32,7 +31,7 @@ func sub(f, s uint32) uint32 {
 func testVPTree(dir string) error {
 	var hashes []imghash.Hash
 	var random *imghash.Hash
-	logger.Println("Starting VP Tree test")
+	logger.Debugln("Starting VP Tree test")
 	rand.Seed(time.Now().Unix())
 
 	var count int
@@ -53,9 +52,9 @@ func testVPTree(dir string) error {
 			count++
 
 			if random == nil && rand.Intn(10000) == 100 {
-				logger.Println("Random: " + info.Name())
+				logger.Debugln("Random: " + info.Name())
 				random = &v
-				logger.Println("\t", random)
+				logger.Debugln("\t", random)
 				//random.Title = info.Name()
 			}
 		}
@@ -66,13 +65,13 @@ func testVPTree(dir string) error {
 		return errors.Wrap(err, "collecting hashes")
 	}
 
-	logger.Println("Completed hash collection:", count*2, "hashes")
+	logger.Debugln("Completed hash collection:", count*2, "hashes")
 
 	tree := imghash.NewTree(hashes)
-	logger.Println("Completed tree with", count, "nodes")
+	logger.Debugln("Completed tree with", count, "nodes")
 
 	q := tree.NearestN(random, 5) //tree.NearestDist(random, 10)
-	logger.Println("Completed tree searching")
+	logger.Debugln("Completed tree searching")
 
 	// Good idea to sort ones with the same difference by their index based on how close they are to the original
 	sort.Slice(q, func(i, j int) bool {
@@ -82,34 +81,34 @@ func testVPTree(dir string) error {
 		return q[i].Dist < q[j].Dist
 	})
 
-	logger.Println("Closest to", random)
+	logger.Debugln("Closest to", random)
 	for _, c := range q {
-		logger.Println(c.Dist, c.Item)
+		logger.Debugln(c.Dist, c.Item)
 	}
 
 	nearest, dist := tree.Nearest(random)
-	logger.Println("Completed nearest search")
-	logger.Println("Closeset item:", dist, nearest)
+	logger.Debugln("Completed nearest search")
+	logger.Debugln("Closeset item:", dist, nearest)
 	return nil
 }
 
 func main() {
 	flag.Parse()
 
-	if *logfile == "-" {
-		logger = log.New(os.Stdout, "", log.LstdFlags)
-	} else {
+	logger = imghash.NewLogger()
+	if *logfile != "-" {
 		file, err := os.OpenFile(*logfile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
 			panic(err)
 		}
 		defer file.Close()
 
-		logger = log.New(file, "", log.LstdFlags)
+		logger.SetOutput(file)
+		//logger = log.New(file, "", log.LstdFlags)
 	}
 
 	if *filename == "" {
-		logger.Fatalln()
+		logger.Errorln("No filename provided")
 	}
 
 	/*
@@ -120,66 +119,66 @@ func main() {
 		pprof.WriteHeapProfile(f)
 	*/
 
-	logger.Println("start")
+	logger.Debugln("start")
 	switch *option {
 	case "write":
 		file, err := imghash.NewFromVideo(*filename)
 		if err != nil {
-			logger.Fatalln("Making hash from video: " + err.Error())
+			logger.Errorln("Making hash from video: " + err.Error())
 		}
 
-		logger.Println("hashing complete", file.Length())
+		logger.Debugln("hashing complete", file.Length())
 
 		if err := file.Write(*filename); err != nil {
-			logger.Fatalln("Writing: " + err.Error())
+			logger.Errorln("Writing: " + err.Error())
 		}
 	case "read":
 		f, err := imghash.LoadFromFile(*filename + "." + strings.ToLower(imghash.FileMagic))
 		if err != nil {
-			logger.Fatalln("Reading hash from file: " + err.Error())
+			logger.Errorln("Reading hash from file: " + err.Error())
 		}
 
-		logger.Println(f.Length())
+		logger.Debugln(f.Length())
 
 		if err := f.Write("new-" + *filename); err != nil {
-			logger.Fatalln("Writing read to file: " + err.Error())
+			logger.Errorln("Writing read to file: " + err.Error())
 		}
 
 		f2, err := imghash.LoadFromFile("new-" + *filename + "." + strings.ToLower(imghash.FileMagic))
 		if err != nil {
-			logger.Fatalln("Reading hash from file: " + err.Error())
+			logger.Errorln("Reading hash from file: " + err.Error())
 		}
 
-		logger.Println(f2.Length())
-		logger.Println(imghash.Compare(f, f2))
+		logger.Debugln(f2.Length())
+		logger.Debugln(imghash.Compare(f, f2))
 	case "check":
 		ep, err := imghash.NewFromVideo(*filename)
 		if err != nil {
-			logger.Fatalln("Making hash from video: " + err.Error())
+			logger.Errorln("Making hash from video: " + err.Error())
 		}
 
-		logger.Println("hashing complete", ep.Length())
+		logger.Debugln("hashing complete", ep.Length())
 
 		if err := ep.Write(*filename); err != nil {
-			logger.Fatalln("Writing: " + err.Error())
+			logger.Errorln("Writing: " + err.Error())
 		}
 
 		// img, err := imghash.NewFromFile(".png")
 		// if err != nil {
-		// 	logger.Fatalln("Making hash from image: " + err.Error())
+		// 	logger.Errorln("Making hash from image: " + err.Errorln())
 		// }
 
-		// logger.Println(img)
+		// logger.Debugln(img)
 
 	case "vptree":
 		if err := testVPTree(*filename); err != nil {
-			logger.Fatalln("Testing VP Tree: " + err.Error())
+			logger.Errorln("Testing VP Tree: " + err.Error())
 		}
 	case "compare":
 		// TODO
 	default:
 		flag.PrintDefaults()
-		logger.Fatalln("Invalid option " + *option)
+		logger.Errorln("Invalid option " + *option)
 	}
-	logger.Println("fin")
+	logger.Debugln("fin")
 }
