@@ -16,8 +16,8 @@ var (
 	InvalidHeader    = errors.New("Invalid Header")
 	InvalidExtension = errors.New("Invalid Extension")
 
-	// The file magic for any file that contains hashes
-	FileMagic string = "TUR"
+	// The file magic for any file that contains hashes (Difference Hash Object)
+	FileMagic string = "DHO"
 )
 
 const (
@@ -76,7 +76,6 @@ func ffmpegRunner(name string, video bool) (*[]Hash, error) {
 	var (
 		buf    bytes.Buffer
 		errbuf bytes.Buffer
-		idx    uint32
 	)
 
 	cmd := exec.Command("ffmpeg", "-hide_banner", "-i", name, "-vf", filter, "-f", "rawvideo", "pipe:1")
@@ -95,6 +94,7 @@ func ffmpegRunner(name string, video bool) (*[]Hash, error) {
 
 	hashes := make([]Hash, buf.Len()/len(img.Pix)) // The number of images from FFmpeg's buffer
 
+	var idx uint32
 	for buf.Len() > 0 {
 		idx++
 		if _, err := buf.Read(img.Pix); err != nil {
