@@ -24,6 +24,15 @@ func (i Hash) Distance(o Hash) int {
 	return bits.OnesCount64(i.VHash^o.VHash) + bits.OnesCount64(i.HHash^o.HHash)
 }
 
+// From color.RGBToYCbCr in Go's standard library, but don't use RGBA() since RGBToYCbCr expects uint8s.
+
+// It's a pretty ingenious solution that I can't seem to find in any other library.
+// Upon testing it appears it performs exactly the same as the standard float
+// conversion outlined by JPEG (https://www.w3.org/Graphics/JPEG/jfif3.pdf).
+
+// The one exception is when the float is the upper half of a number (13.6, 15.8, 60.9)
+// it will ceil so the results will respectively be (14, 16, 61). This provides a small
+// amount of change, but it's so unnoticeable in terms of the hash that it's not worth using floats.
 func rgbToY(r, g, b uint8) uint8 {
 	return uint8((19595*int32(r) + 38470*int32(g) + 7471*int32(b) + 1<<15) >> 16)
 }
@@ -44,18 +53,7 @@ func differenceHash(img *image.RGBA) (hdhash, vdhash uint64, err error) {
 		pixels[y] = make([]uint8, dx)
 		for x := range pixels[y] {
 			col = img.RGBAAt(x, y)
-
-			// From color.RGBToYCbCr in Go's standard library, but don't use RGBA() since RGBToYCbCr expects uint8s.
-
-			// It's a pretty ingenious solution that I can't seem to find in any other library.
-			// Upon testing it appears it performs exactly the same as the standard float
-			// conversion outlined by JPEG (https://www.w3.org/Graphics/JPEG/jfif3.pdf).
-
-			// The one exception is when the float is the upper half of a number (13.6, 15.8, 60.9)
-			// it will ceil so the results will respectively be (14, 16, 61). This provides a small
-			// amount of change, but it's so unnoticeable in terms of the hash that it's not worth using floats.
 			pixels[y][x] = rgbToY(col.R, col.G, col.B)
-			//pixels[y][x] = uint8((19595*int32(col.R) + 38470*int32(col.B) + 7471*int32(col.G) + 1<<15) >> 16) // ints > floats
 		}
 	}
 
