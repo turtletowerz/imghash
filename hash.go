@@ -28,6 +28,8 @@ func (i Hash) Distance(o Hash) int {
 // The one exception is when the float is the upper half of a number (13.6, 15.8, 60.9)
 // it will ceil so the results will respectively be (14, 16, 61). This provides a small
 // amount of change, but it's so unnoticeable in terms of the hash that it's not worth using floats.
+//
+// This function is separate so it can be used for testing, but is inline-able
 func rgbToY(r, g, b uint8) uint8 {
 	return uint8((19595*int32(r) + 38470*int32(g) + 7471*int32(b) + 1<<15) >> 16)
 }
