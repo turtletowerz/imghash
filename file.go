@@ -5,7 +5,6 @@ import (
 	"io"
 	"math"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -35,7 +34,7 @@ func NewFile() *File {
 // Creates a new file with the provided version. Currently only "1" exists as a valid option
 func NewFileWithVersion(version byte) *File {
 	if version != 1 {
-		panic("Invalid version: " + strconv.Itoa(int(version)))
+		version = 1
 	}
 	return &File{version: version, maxSize: size32}
 }

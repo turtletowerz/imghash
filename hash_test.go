@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Subtract two numbers and return 0 or a whole number
+// Subtract two numbers and return 0 or a whole number.
 func subAbs(n1, n2 uint8) uint8 {
 	if n1 > n2 {
 		return n1 - n2
@@ -16,6 +16,7 @@ func subAbs(n1, n2 uint8) uint8 {
 	return n2 - n1
 }
 
+// Test to make sure the current hash function falls within appropriate JPEG specification bounds.
 func TestHashJPEG(t *testing.T) {
 	for r := 0; r < 256; r += 7 {
 		for g := 0; g < 256; g += 5 {
@@ -35,6 +36,7 @@ func TestHashJPEG(t *testing.T) {
 	}
 }
 
+// Test to make sure the hash function is functionally equivalent to the standard library version.
 func TestHashStdLib(t *testing.T) {
 	for r := 0; r < 256; r += 7 {
 		for g := 0; g < 256; g += 5 {
@@ -50,7 +52,7 @@ func TestHashStdLib(t *testing.T) {
 	}
 }
 
-// Old method of doing the hash, this test was added to make sure all future iterations of the hash funciton comply with the original
+// Old method of doing the hash, this test was added to make sure all future iterations of the hash funciton comply with the original.
 func testold(img *image.RGBA) (vdhash uint64, hdhash uint64) {
 	var col color.RGBA
 
@@ -63,7 +65,7 @@ func testold(img *image.RGBA) (vdhash uint64, hdhash uint64) {
 		}
 	}
 
-	// x and y are technically mislabeled, since the x component of a 2D array is the inner arrays
+	// x and y are technically mislabeled, since the x component of a 2D array is the inner arrays.
 	var offset uint
 	for x := 0; x < 8; x++ {
 		for y := 0; y < 8; y++ {
@@ -82,6 +84,7 @@ func testold(img *image.RGBA) (vdhash uint64, hdhash uint64) {
 	return
 }
 
+// See testold explanation.
 func TestPixels(t *testing.T) {
 	rand.Seed(time.Now().Unix())
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
