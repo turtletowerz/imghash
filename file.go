@@ -154,6 +154,8 @@ func LoadFromFile(name string) (*File, error) {
 			h.Index = uint32(binary.LittleEndian.Uint16(buf[0:]))
 		case size32:
 			h.Index = binary.LittleEndian.Uint32(buf[0:])
+		default:
+			panic("unreachable")
 		}
 
 		h.VHash = binary.LittleEndian.Uint64(buf[f.maxSize+0:])
