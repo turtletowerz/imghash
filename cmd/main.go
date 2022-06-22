@@ -122,7 +122,7 @@ func main() {
 	logger.Debugln("start")
 	switch *option {
 	case "write":
-		file, err := imghash.NewFromVideo(*filename)
+		file, err := imghash.NewFromPath(*filename)
 		if err != nil {
 			logger.Errorln("Making hash from video: " + err.Error())
 		}
@@ -152,7 +152,7 @@ func main() {
 		logger.Debugln(f2.Length())
 		logger.Debugln(imghash.Compare(f, f2))
 	case "check":
-		ep, err := imghash.NewFromVideo(*filename)
+		ep, err := imghash.NewFromPath(*filename)
 		if err != nil {
 			logger.Errorln("Making hash from video: " + err.Error())
 		}
