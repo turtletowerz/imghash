@@ -70,9 +70,16 @@ outer:
 // Writes the file to the given output path, appending the appropriate file extension
 func (f *File) Write(path string) error {
 	// determine byte size to use
-	if l := f.Length(); l <= math.MaxUint8 {
+	var maxIndex uint32
+	for _, h := range f.hashes {
+		if h.Index > maxIndex {
+			maxIndex = h.Index
+		}
+	}
+
+	if maxIndex <= math.MaxUint8 {
 		f.maxSize = size08
-	} else if l <= math.MaxUint16 {
+	} else if maxIndex <= math.MaxUint16 {
 		f.maxSize = size16
 	}
 
