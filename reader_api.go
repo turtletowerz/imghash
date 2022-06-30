@@ -208,7 +208,7 @@ func NewFromVideo2(name string) (*File, error) {
 				//log.Println(frame.pts, decCtx.frame_number, encCtx.frame_number, outpacket.size)
 				img.Pix = C.GoBytes(unsafe.Pointer(outpacket.data), outpacket.size)
 
-				vh, hh, err := differenceHash(&img)
+				hh, vh, err := differenceHash(&img)
 				if err != nil {
 					return nil, errors.Wrap(err, "creating hash")
 				}

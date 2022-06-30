@@ -96,7 +96,7 @@ func TestPixels(t *testing.T) {
 	}
 
 	vh1, hh1 := testold(img)
-	vh2, hh2, err := differenceHash(img)
+	hh2, vh2, err := differenceHash(img)
 
 	if vh1 != vh2 || hh1 != hh2 {
 		t.Fatalf("\nold hash: %d %d\nnew hash: %d %d\nerror: %s\n", vh1, hh1, vh2, hh2, err)

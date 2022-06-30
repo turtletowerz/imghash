@@ -97,7 +97,7 @@ func ffmpegRunner(name string, video bool) (*[]Hash, error) {
 			return nil, err
 		}
 
-		vh, hh, err := differenceHash(img)
+		hh, vh, err := differenceHash(img)
 		if err != nil {
 			return nil, errors.Wrapf(err, "creating hash for frame %d", idx)
 		}
