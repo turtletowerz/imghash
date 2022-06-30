@@ -53,14 +53,14 @@ func TestHashStdLib(t *testing.T) {
 }
 
 // Old method of doing the hash, this test was added to make sure all future iterations of the hash funciton comply with the original.
-func testold(img *image.RGBA) (vdhash uint64, hdhash uint64) {
-	var col color.RGBA
+func testold(img *image.NRGBA) (vdhash uint64, hdhash uint64) {
+	var col color.NRGBA
 
 	pixels := make([][]uint8, img.Rect.Dy())
 	for y := range pixels {
 		pixels[y] = make([]uint8, img.Rect.Dx())
 		for x := range pixels[y] {
-			col = img.RGBAAt(x, y)
+			col = img.NRGBAAt(x, y)
 			pixels[y][x] = rgbToY(col.R, col.G, col.B)
 		}
 	}
@@ -87,11 +87,11 @@ func testold(img *image.RGBA) (vdhash uint64, hdhash uint64) {
 // See testold explanation.
 func TestPixels(t *testing.T) {
 	rand.Seed(time.Now().Unix())
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	img := image.NewNRGBA(image.Rect(0, 0, width, height))
 
 	for x := 0; x < img.Bounds().Dx(); x++ {
 		for y := 0; y < img.Bounds().Dy(); y++ {
-			img.SetRGBA(x, y, color.RGBA{R: uint8(rand.Intn(255)), G: uint8(rand.Intn(255)), B: uint8(rand.Intn(255)), A: 0xff})
+			img.SetNRGBA(x, y, color.NRGBA{R: uint8(rand.Intn(255)), G: uint8(rand.Intn(255)), B: uint8(rand.Intn(255)), A: 0xff})
 		}
 	}
 

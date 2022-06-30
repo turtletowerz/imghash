@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 )
@@ -29,7 +30,7 @@ const (
 )
 
 var (
-	videoExtensions = []string{".mp4", ".mkv", ".avi", ".mpg", "gif"} // GIF should be counted as a video so the 1 frame check doesn't fail
+	videoExtensions = []string{".mp4", ".mkv", ".avi", ".mpg", ".gif", ".mov"} // GIF should be counted as a video so the 1 frame check doesn't fail
 	imageExtensions = []string{".jpg", ".jpeg", ".png", ".webp"}
 )
 
@@ -41,26 +42,6 @@ func inSlice[T comparable](arr []T, elem T) bool {
 		}
 	}
 	return false
-}
-
-// Compares two files, returning an error if they are not equal explaining the reason.
-func Compare(file1 *File, file2 *File) error {
-	if file1.Length() != file2.Length() {
-		return errors.Errorf("File lengths are different: %d vs %d", file1.Length(), file2.Length())
-	}
-
-outer:
-	for _, h1 := range file1.hashes {
-		for _, h2 := range file2.hashes {
-			if h1.VHash == h2.VHash && h1.HHash == h2.HHash {
-				continue outer
-			}
-		}
-
-		return errors.Errorf("Could not find hash in second file: V: %d, H: %d", h1.VHash, h1.HHash)
-	}
-
-	return nil
 }
 
 func ffmpegRunner(name string, video bool) (*[]Hash, error) {
@@ -82,7 +63,7 @@ func ffmpegRunner(name string, video bool) (*[]Hash, error) {
 		return nil, errors.Wrapf(err, "running command (stderr: %s)", errbuf.String())
 	}
 
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	img := image.NewNRGBA(image.Rect(0, 0, width, height))
 
 	if buf.Len()%len(img.Pix) != 0 {
 		return nil, errors.Errorf("buffer length must be a multiple of image size (%d), but was %d", len(img.Pix), buf.Len())
@@ -151,7 +132,7 @@ func NewFromPath(path string) (*File, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "hashing directory")
 		}
-	} else if n := info.Name(); inSlice(imageExtensions, n) {
+	} else if ext := filepath.Ext(info.Name()); inSlice(imageExtensions, ext) {
 		hashes, err = ffmpegRunner(path, false)
 		if err != nil {
 			return nil, errors.Wrap(err, "hashing image")
@@ -161,7 +142,7 @@ func NewFromPath(path string) (*File, error) {
 		if len(*hashes) != 1 {
 			return nil, errors.Errorf("%d hashes created instead of 1", len(*hashes))
 		}
-	} else if inSlice(videoExtensions, n) {
+	} else if inSlice(videoExtensions, ext) {
 		hashes, err = ffmpegRunner(path, true)
 		if err != nil {
 			return nil, errors.Wrap(err, "hashing video")

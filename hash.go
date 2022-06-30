@@ -35,7 +35,7 @@ func rgbToY(r, g, b uint8) uint8 {
 }
 
 // http://www.hackerfactor.com/blog/?/archives/529-Kind-of-Like-That.html
-func differenceHash(img *image.RGBA) (hdhash, vdhash uint64, err error) {
+func differenceHash(img *image.NRGBA) (hdhash, vdhash uint64, err error) {
 	// Check to make sure the bounds are the right size for the hash.
 	dx, dy := img.Rect.Dx(), img.Rect.Dy()
 	if dx != width || dy != height {
@@ -43,13 +43,13 @@ func differenceHash(img *image.RGBA) (hdhash, vdhash uint64, err error) {
 		return
 	}
 
-	var col color.RGBA
+	var col color.NRGBA
 
 	pixels := make([][]uint8, dy)
 	for y := range pixels {
 		pixels[y] = make([]uint8, dx)
 		for x := range pixels[y] {
-			col = img.RGBAAt(x, y)
+			col = img.NRGBAAt(x, y)
 			pixels[y][x] = rgbToY(col.R, col.G, col.B)
 		}
 	}

@@ -157,7 +157,7 @@ func NewFromVideo2(name string) (*File, error) {
 	}
 	defer C.free_frame(outframe)
 
-	var img image.RGBA
+	var img image.NRGBA
 	img.Stride = 4 * width
 	img.Rect = image.Rect(0, 0, width, height)
 

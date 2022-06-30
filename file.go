@@ -172,3 +172,23 @@ func LoadFromFile(name string) (*File, error) {
 
 	return f, nil
 }
+
+// Compares two files, returning an error if they are not equal explaining the reason.
+func Compare(file1 *File, file2 *File) error {
+	if file1.Length() != file2.Length() {
+		return errors.Errorf("File lengths are different: %d vs %d", file1.Length(), file2.Length())
+	}
+
+outer:
+	for _, h1 := range file1.hashes {
+		for _, h2 := range file2.hashes {
+			if h1.VHash == h2.VHash && h1.HHash == h2.HHash {
+				continue outer
+			}
+		}
+
+		return errors.Errorf("Could not find hash in second file: V: %d, H: %d", h1.VHash, h1.HHash)
+	}
+
+	return nil
+}
